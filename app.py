@@ -9,7 +9,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 import os
-from flask import Flask
+from flask import Flask, jsonify, render_template, request, session, redirect, url_for
 
 # السطر 13 (الذي غيرته) - اتركه كما هو:
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
