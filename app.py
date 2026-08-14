@@ -11,8 +11,7 @@ from urllib.parse import urlparse
 import requests
 from flask import Flask, jsonify, render_template, request, session, redirect, url_for
 
-app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "CHANGE_THIS_SECRET_KEY")
+app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
 
 # ============================================================
 # Secrets: set these as environment variables on a real server.
