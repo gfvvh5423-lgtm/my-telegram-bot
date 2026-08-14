@@ -8,10 +8,14 @@ from datetime import datetime
 from typing import Any
 from urllib.parse import urlparse
 
-import requests
-from flask import Flask, jsonify, render_template, request, session, redirect, url_for
+import os
+from flask import Flask
 
+# السطر 13 (الذي غيرته) - اتركه كما هو:
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
+
+# غير السطر 14 ليصبح هكذا (هذا الحل يضمن عدم توقف السيرفر حتى لو لم يجد المتغير):
+app.secret_key = os.getenv("FLASK_SECRET_KEY") or "CHANGE_THIS_SECRET_KEY"
 
 # ============================================================
 # Secrets: set these as environment variables on a real server.
