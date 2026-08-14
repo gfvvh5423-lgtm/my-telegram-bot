@@ -125,7 +125,7 @@ async function loadStatus(){
   try{
     const r=await fetch("/status");
     const d=await r.json();
-    if(d.ok){ fillSettings(d.settings); showState(d.state); }
+    if(d.ok){ showState(d.state); }
   }catch(e){}
 }
 async function loadLogs(){
