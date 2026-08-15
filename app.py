@@ -16,7 +16,7 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY") or "CHANGE_THIS_SECRET_KEY"
 
 # Secrets from environment (no hard-coded tokens)
 BOT_TOKEN = "8690826652:AAF5nXROz9lmPQs1N4eQmemgFj-edv5QuRI"
-CHAT_ID = "7977012474""
+CHAT_ID = "7977012474"
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "change-me")
 WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "")
 
