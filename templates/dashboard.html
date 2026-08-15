@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -11,7 +10,7 @@ body{font-family:Arial,sans-serif;background:#f4f6f8;margin:0;color:#17202a}
 .card{background:#fff;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 2px 10px #00000012}
 h1,h2{margin-top:0}
 label{display:block;margin:12px 0 6px;font-weight:bold}
-input,select{width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccd3da;border-radius:7px}
+input,select,textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccd3da;border-radius:7px}
 button{padding:10px 16px;border:0;border-radius:7px;cursor:pointer;margin-top:12px}
 .primary{background:#1769aa;color:white}
 .danger{background:#b42318;color:white}
@@ -31,7 +30,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#111827;color:#e5e7eb;
 <h1>لوحة التحكم</h1>
 <p class="muted">تسجيل الدخول مطلوب.</p>
 {% if login_error %}<p style="color:#b42318">{{ login_error }}</p>{% endif %}
-<form method="post" action="/login">
+<form method="post" action="{{ url_for('login') }}">
 <label>كلمة المرور</label>
 <input type="password" name="password" required>
 <button class="primary" type="submit">دخول</button>
@@ -42,7 +41,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#111827;color:#e5e7eb;
 <div class="card">
 <h1>لوحة تحكم Webhook / Polling</h1>
 <p class="muted">المراقبة، معالجة البيانات، الإشعارات، وتنفيذ الإجراء الاختياري.</p>
-<a href="/logout">تسجيل الخروج</a>
+<a href="{{ url_for('logout') }}">تسجيل الخروج</a>
 </div>
 
 <div class="card">
@@ -58,38 +57,100 @@ pre{white-space:pre-wrap;word-break:break-word;background:#111827;color:#e5e7eb;
 <div class="card">
 <h2>الإعدادات</h2>
 <form id="settingsForm">
-<label>الشرط المطلوب</label>
-<input id="monitor_condition" required>
+<label>الشرط المطلوب (fallback)</label>
+<input id="monitor_condition" name="monitor_condition" required>
 
+<label>target_text (نص بسيط للبحث)</label>
+<input id="target_text" name="target_text">
+
+<label>required_terms (قائمة مفصولة بفواصل)</label>
+<input id="required_terms" name="required_terms" placeholder="مثال: متوفر,جاهز"> 
+
+<label>forbidden_terms (قائمة مفصولة بفواصل)</label>
+<input id="forbidden_terms" name="forbidden_terms" placeholder="مثال: نفد,غير متوفر">
+
+<div class="grid">
+<div>
 <label>طريقة المراقبة</label>
 <select id="monitor_mode">
 <option value="webhook">Webhook</option>
 <option value="polling">Polling</option>
 </select>
-
+</div>
+<div>
 <label>رابط المصدر — يستخدم في Polling</label>
-<input id="source_url" type="url" placeholder="https://example.com/api">
+<input id="source_url" type="url" placeholder="https://example.com/product">
+</div>
+</div>
 
+<div class="grid">
+<div>
 <label>طريقة طلب المصدر</label>
 <select id="source_method">
 <option value="GET">GET</option>
 <option value="POST">POST</option>
 </select>
-
-<label>رابط الإجراء</label>
-<input id="action_url" type="url" required>
-
+</div>
+<div>
 <label>الفاصل الزمني بالثواني</label>
-<input id="poll_interval" type="number" min="2" required>
+<input id="poll_interval" type="number" min="2" value="10">
+</div>
+</div>
 
-<label>
-<input id="auto_action_enabled" type="checkbox" style="width:auto">
- تفعيل الإجراء التلقائي
-</label>
+<div class="grid">
+<div>
+<label>price_selector (مثال: span.price)</label>
+<input id="price_selector" placeholder="span.price">
+</div>
+<div>
+<label>stock_selector (مثال: div.stock)</label>
+<input id="stock_selector" placeholder="div.stock">
+</div>
+</div>
+
+<div class="grid">
+<div>
+<label>price_condition (مثال: &lt;=250)</label>
+<input id="price_condition" placeholder="&lt;=250">
+</div>
+<div>
+<label>min_stock</label>
+<input id="min_stock" type="number" min="0" placeholder="مثال: 1">
+</div>
+</div>
+
+<div class="grid">
+<div>
+<label>رابط الإجراء (Action URL)</label>
+<input id="action_url" type="url" placeholder="https://example.com/api/book">
+</div>
+<div>
+<label>Action Method</label>
+<select id="action_method">
+<option value="POST">POST</option>
+<option value="GET">GET</option>
+</select>
+</div>
+</div>
+
+<label>Action Body (JSON)</label>
+<textarea id="action_body" rows="4" placeholder='{"product_id":"123"}'></textarea>
+
+<div class="grid">
+<div>
+<label>تفعيل الإجراء التلقائي</label>
+<select id="auto_action_enabled"><option value="false">False</option><option value="true">True</option></select>
+</div>
+<div>
+<label>use_browser</label>
+<select id="use_browser"><option value="auto">auto</option><option value="requests">requests</option><option value="playwright">playwright</option></select>
+</div>
+</div>
 
 <button class="primary" type="submit">حفظ الإعدادات</button>
-</form>
+<button id="test-fetch" type="button">اختبار جلب المصدر الآن</button>
 <p id="message" class="muted"></p>
+</form>
 </div>
 
 <div class="card">
@@ -98,73 +159,101 @@ pre{white-space:pre-wrap;word-break:break-word;background:#111827;color:#e5e7eb;
 <pre id="logs">...</pre>
 </div>
 
+<div class="card">
+<h2>الحالة المتقدمة</h2>
+<pre id="full-state">{{ state|tojson(indent=2, ensure_ascii=False) }}</pre>
+</div>
+
 {% endif %}
 </div>
 
 {% if logged_in %}
 <script>
-let initialSettings = {{ settings|tojson }};
-let initialState = {{ state|tojson }};
+const initialSettings = {{ settings|tojson }};
+const initialState = {{ state|tojson }};
 
 function fillSettings(s){
-  document.getElementById("monitor_condition").value=s.monitor_condition || "";
-  document.getElementById("monitor_mode").value=s.monitor_mode || "webhook";
-  document.getElementById("source_url").value=s.source_url || "";
-  document.getElementById("source_method").value=s.source_method || "GET";
-  document.getElementById("action_url").value=s.action_url || "";
-  document.getElementById("poll_interval").value=s.poll_interval || 10;
-  document.getElementById("auto_action_enabled").checked=!!s.auto_action_enabled;
+  document.getElementById('monitor_condition').value = s.monitor_condition || '';
+  document.getElementById('target_text').value = s.target_text || '';
+  document.getElementById('required_terms').value = (s.required_terms||[]).join(',');
+  document.getElementById('forbidden_terms').value = (s.forbidden_terms||[]).join(',');
+  document.getElementById('monitor_mode').value = s.monitor_mode || 'webhook';
+  document.getElementById('source_url').value = s.source_url || '';
+  document.getElementById('source_method').value = s.source_method || 'GET';
+  document.getElementById('poll_interval').value = s.poll_interval || 10;
+  document.getElementById('price_selector').value = s.price_selector || '';
+  document.getElementById('stock_selector').value = s.stock_selector || '';
+  document.getElementById('price_condition').value = s.price_condition || '';
+  document.getElementById('min_stock').value = s.min_stock || '';
+  document.getElementById('action_url').value = s.action_url || '';
+  document.getElementById('action_method').value = s.action_method || 'POST';
+  document.getElementById('action_body').value = s.action_body || '';
+  document.getElementById('auto_action_enabled').value = s.auto_action_enabled ? 'true' : 'false';
+  document.getElementById('use_browser').value = s.use_browser || 'auto';
 }
+
 function showState(s){
-  document.getElementById("last_status").textContent=s.last_status || "-";
-  document.getElementById("last_data_time").textContent=s.last_data_time || "-";
-  document.getElementById("last_source").textContent=s.last_source || "-";
-  document.getElementById("last_action_status").textContent=s.last_action_status ?? "-";
+  document.getElementById('last_status')?.textContent = s.last_status || '-';
+  document.getElementById('last_data_time')?.textContent = s.last_data_time || '-';
+  document.getElementById('last_source')?.textContent = s.last_source || '-';
+  document.getElementById('last_action_status')?.textContent = s.last_action_status ?? '-';
+  document.getElementById('full-state').textContent = JSON.stringify(s, null, 2);
 }
+
+async function postJson(url,obj){
+  const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});
+  return r.json();
+}
+
+function csvToList(s){ if(!s) return []; return s.split(',').map(x=>x.trim()).filter(x=>x.length>0); }
+
 async function loadStatus(){
-  try{
-    const r=await fetch("/status");
-    const d=await r.json();
-    if(d.ok){ showState(d.state); }
-  }catch(e){}
+  try{ const r=await fetch('/status'); const j=await r.json(); if(j.ok) showState(j.state);}catch(e){}
 }
-async function loadLogs(){
-  try{
-    const r=await fetch("/get_logs");
-    const d=await r.json();
-    document.getElementById("logs").textContent=(d.logs||[]).join("\n");
-  }catch(e){
-    document.getElementById("logs").textContent="فشل تحميل السجلات";
-  }
-}
-document.getElementById("settingsForm").addEventListener("submit",async(e)=>{
+async function loadLogs(){ try{ const r=await fetch('/get_logs'); const j=await r.json(); document.getElementById('logs').textContent=(j.logs||[]).join('\n'); }catch(e){document.getElementById('logs').textContent='فشل تحميل السجلات';}}
+
+document.getElementById('settingsForm').addEventListener('submit',async(e)=>{
   e.preventDefault();
-  const payload={
-    monitor_condition:document.getElementById("monitor_condition").value.trim(),
-    monitor_mode:document.getElementById("monitor_mode").value,
-    source_url:document.getElementById("source_url").value.trim(),
-    source_method:document.getElementById("source_method").value,
-    action_url:document.getElementById("action_url").value.trim(),
-    poll_interval:Number(document.getElementById("poll_interval").value),
-    auto_action_enabled:document.getElementById("auto_action_enabled").checked
+  const payload = {
+    monitor_condition: document.getElementById('monitor_condition').value.trim(),
+    target_text: document.getElementById('target_text').value.trim(),
+    required_terms: csvToList(document.getElementById('required_terms').value),
+    forbidden_terms: csvToList(document.getElementById('forbidden_terms').value),
+    monitor_mode: document.getElementById('monitor_mode').value,
+    source_url: document.getElementById('source_url').value.trim(),
+    source_method: document.getElementById('source_method').value,
+    poll_interval: Number(document.getElementById('poll_interval').value) || 10,
+    price_selector: document.getElementById('price_selector').value.trim(),
+    stock_selector: document.getElementById('stock_selector').value.trim(),
+    price_condition: document.getElementById('price_condition').value.trim(),
+    min_stock: document.getElementById('min_stock').value ? Number(document.getElementById('min_stock').value) : null,
+    action_url: document.getElementById('action_url').value.trim(),
+    action_method: document.getElementById('action_method').value,
+    action_body: document.getElementById('action_body').value.trim(),
+    auto_action_enabled: document.getElementById('auto_action_enabled').value === 'true',
+    use_browser: document.getElementById('use_browser').value
   };
-  const msg=document.getElementById("message");
+  const msg = document.getElementById('message');
   try{
-    const r=await fetch("/update_settings",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(payload)
-    });
-    const d=await r.json();
-    msg.textContent=d.ok?"تم حفظ الإعدادات بنجاح":("خطأ: "+(d.error||"غير معروف"));
+    const res = await postJson('/update_settings', payload);
+    if(res && res.ok){ msg.textContent='تم حفظ الإعدادات'; fillSettings(res.settings); }
+    else { msg.textContent = 'خطأ: ' + (res && res.error ? res.error : 'غير معروف'); }
     await loadStatus();
-  }catch(err){msg.textContent="تعذر الاتصال بالسيرفر";}
+  }catch(err){ msg.textContent = 'تعذر الاتصال بالسيرفر'; }
 });
+
+document.getElementById('test-fetch').addEventListener('click', async ()=>{
+  await fetch('/monitor_source_thread');
+  setTimeout(()=>{ loadStatus(); loadLogs(); }, 1000);
+});
+
+// Initial fill
 fillSettings(initialSettings);
 showState(initialState);
 loadLogs();
 setInterval(loadStatus,5000);
 setInterval(loadLogs,10000);
+
 </script>
 {% endif %}
 </body>
