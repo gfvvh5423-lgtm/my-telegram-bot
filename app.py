@@ -1,4 +1,3 @@
-import sqlite3
 import os
 import json
 import time
@@ -17,7 +16,7 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY") or "CHANGE_THIS_SECRET_KEY"
 
 # Secrets from environment (no hard-coded tokens)
 BOT_TOKEN = "8690826652:AAHdcncZg5H4NsLgN7NtvH-Go9BN4TTscc8"
-CHAT_ID = "7977012474"
+CHAT_ID = "7977012474""
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "change-me")
 WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "")
 
@@ -661,7 +660,7 @@ def update_settings():
     if redirect_response:
         return jsonify({"ok": False, "error": "Unauthorized"}), 401
 
-    data = request.get_json(force=True)
+    data = request.get_json(silent=True)
     if not isinstance(data, dict):
         return jsonify({"ok": False, "error": "Invalid JSON object"}), 400
 
@@ -719,10 +718,29 @@ def update_settings():
 
     condition_changed = False
     with settings_lock:
+        # سجل ما استلمنا لأغراض تشخيصية
+        try:
+            save_log(f"UPDATE_SETTINGS payload: {json.dumps(new_values, ensure_ascii=False)}", "DEBUG")
+        except Exception:
+            pass
+
         if "monitor_condition" in new_values:
             condition_changed = str(settings.get("monitor_condition", "")) != str(new_values["monitor_condition"])
-        settings.update(new_values)
-    save_settings()
+
+        # حقول نصية حساسة لا نريد أن تُمحى بقيمة فارغة عن طريق الخطأ من الواجهة
+        skip_empty_overwrite = {"source_url", "action_url", "action_body", "price_selector", "stock_selector", "target_text"}
+
+        # دمج آمن: إذا كانت القيمة نصية وفارغة -> تجاهل (المستخدم لم يملأها)
+        for k, v in new_values.items():
+            if k in skip_empty_overwrite and isinstance(v, str) and v.strip() == "":
+                # لا نُحدث هذا الحقل لأنه نصّي وفارغ؛ المستخدم لم يقدّم قيمة صريحة
+                continue
+            # لإتاحة تفريغ القيمة عمداً: قبول JSON null -> v is None سيُحفظ كقيمة فارغة
+            settings[k] = v
+
+    # تأكد من حفظ الإعدادات على القرص، وأعد فشل الاستجابة إذا لم يكتب
+    if not save_settings():
+        return jsonify({"ok": False, "error": "فشل حفظ الإعدادات. لا يمكن الكتابة على القرص (بيئة السيرفر)"}), 500
 
     if condition_changed or "target_text" in new_values:
         with state_lock:
@@ -790,3 +808,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+    
