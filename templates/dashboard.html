@@ -212,9 +212,12 @@ async function loadStatus(){
 }
 async function loadLogs(){ try{ const r=await fetch('/get_logs'); const j=await r.json(); document.getElementById('logs').textContent=(j.logs||[]).join('\n'); }catch(e){document.getElementById('logs').textContent='فشل تحميل السجلات';}}
 
-document.getElementById('settingsForm').addEventListener('submit',async(e)=>{
-  e.preventDefault();
-  const payload = {
+document.getElementById('settingsForm').addEventListener('submit', async(e)=>{
+  e.preventDefault(); // منع إعادة تحميل الصفحة
+  const msg = document.getElementById('message');
+  
+  // 1. قراءة البيانات من الحقول وتحويلها للتنسيق الصحيح
+  const formValues = {
     monitor_condition: document.getElementById('monitor_condition').value.trim(),
     target_text: document.getElementById('target_text').value.trim(),
     required_terms: csvToList(document.getElementById('required_terms').value),
@@ -233,13 +236,23 @@ document.getElementById('settingsForm').addEventListener('submit',async(e)=>{
     auto_action_enabled: document.getElementById('auto_action_enabled').value === 'true',
     use_browser: document.getElementById('use_browser').value
   };
-  const msg = document.getElementById('message');
+
+  // 2. دمج الإعدادات الحالية مع الجديدة (إرسال Payload كامل)
+  const payload = { ...initialSettings, ...formValues };
+
   try{
     const res = await postJson('/update_settings', payload);
-    if(res && res.ok){ msg.textContent='تم حفظ الإعدادات'; fillSettings(res.settings); }
-    else { msg.textContent = 'خطأ: ' + (res && res.error ? res.error : 'غير معروف'); }
+    if(res && res.ok){ 
+        msg.textContent='✅ تم حفظ الإعدادات بنجاح!'; 
+        fillSettings(res.settings); 
+    }
+    else { 
+        msg.textContent = '❌ خطأ: ' + (res && res.error ? res.error : 'غير معروف'); 
+    }
     await loadStatus();
-  }catch(err){ msg.textContent = 'تعذر الاتصال بالسيرفر'; }
+  }catch(err){ 
+    msg.textContent = '❌ تعذر الاتصال بالسيرفر'; 
+  }
 });
 
 document.getElementById('test-fetch').addEventListener('click', async ()=>{
