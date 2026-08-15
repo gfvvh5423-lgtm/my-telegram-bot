@@ -661,7 +661,7 @@ def update_settings():
     if redirect_response:
         return jsonify({"ok": False, "error": "Unauthorized"}), 401
 
-    data = request.get_json(silent=True)
+    data = request.get_json(force=True)
     if not isinstance(data, dict):
         return jsonify({"ok": False, "error": "Invalid JSON object"}), 400
 
