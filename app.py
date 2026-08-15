@@ -15,7 +15,7 @@ app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 't
 app.secret_key = os.getenv("FLASK_SECRET_KEY") or "CHANGE_THIS_SECRET_KEY"
 
 # Secrets from environment (no hard-coded tokens)
-BOT_TOKEN = "8690826652:AAHdcncZg5H4NsLgN7NtvH-Go9BN4TTscc8"
+BOT_TOKEN = "8690826652:AAF5nXROz9lmPQs1N4eQmemgFj-edv5QuRI"
 CHAT_ID = "7977012474""
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "change-me")
 WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "")
