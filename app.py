@@ -656,8 +656,7 @@ def home():
 
 @app.route("/update_settings", methods=["POST"])
 def update_settings():
-    redirect_response = login_required()
-    if redirect_response:
+    if not session.get("logged_in"):
         return jsonify({"ok": False, "error": "Unauthorized"}), 401
 
     data = request.get_json(silent=True)
@@ -757,8 +756,7 @@ def update_settings():
 
 @app.route("/get_logs", methods=["GET"])
 def get_logs():
-    redirect_response = login_required()
-    if redirect_response:
+    if not session.get("logged_in"):
         return jsonify({"ok": False, "error": "Unauthorized"}), 401
     try:
         if not os.path.exists(LOG_FILE):
@@ -771,8 +769,7 @@ def get_logs():
 
 @app.route("/status", methods=["GET"])
 def status():
-    redirect_response = login_required()
-    if redirect_response:
+    if not session.get("logged_in"):
         return jsonify({"ok": False, "error": "Unauthorized"}), 401
     with settings_lock:
         current_settings = deepcopy(settings)
