@@ -193,10 +193,18 @@ function fillSettings(s){
 }
 
 function showState(s){
-  document.getElementById('last_status')?.textContent = s.last_status || '-';
-  document.getElementById('last_data_time')?.textContent = s.last_data_time || '-';
-  document.getElementById('last_source')?.textContent = s.last_source || '-';
-  document.getElementById('last_action_status')?.textContent = s.last_action_status ?? '-';
+  const elStatus = document.getElementById('last_status');
+  if (elStatus) elStatus.textContent = s.last_status || '-';
+
+  const elTime = document.getElementById('last_data_time');
+  if (elTime) elTime.textContent = s.last_data_time || '-';
+
+  const elSource = document.getElementById('last_source');
+  if (elSource) elSource.textContent = s.last_source || '-';
+
+  const elAction = document.getElementById('last_action_status');
+  if (elAction) elAction.textContent = s.last_action_status ?? '-';
+
   document.getElementById('full-state').textContent = JSON.stringify(s, null, 2);
 }
 
