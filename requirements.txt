@@ -1,4 +1,8 @@
-Flask
+flask
 requests
-playwright
 beautifulsoup4
+gunicorn
+# playwright is OPTIONAL — only needed if you set use_browser=playwright for a target
+# (adds a heavy browser binary to the build). Uncomment the two lines below and add
+# "playwright install --with-deps chromium" as a Railway build step if you need it.
+# playwright
