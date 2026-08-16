@@ -19,8 +19,8 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY") or "CHANGE_THIS_SECRET_KEY"
 # Secrets — read ONLY from environment variables (Railway > Variables tab)
 # Never hard-code tokens here.
 # ---------------------------------------------------------------------------
-BOT_TOKEN = os.getenv("BOT_TOKEN", "")
-CHAT_ID = os.getenv("CHAT_ID", "")
+BOT_TOKEN = "8847474876:AAFI6sSQDiO3HD94CRJVNw_jGd9bUrl-lg4"
+CHAT_ID = "7977012474"
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "change-me")
 WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "")
 
