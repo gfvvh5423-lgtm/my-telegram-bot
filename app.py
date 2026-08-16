@@ -19,8 +19,8 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY") or "CHANGE_THIS_SECRET_KEY"
 # Secrets — read ONLY from environment variables (Railway > Variables tab)
 # Never hard-code tokens here.
 # ---------------------------------------------------------------------------
-BOT_TOKEN = "8847474876:AAFI6sSQDiO3HD94CRJVNw_jGd9bUrl-lg4"
-CHAT_ID = "7977012474"
+BOT_TOKEN = os.getenv("BOT_TOKEN", "")
+CHAT_ID = os.getenv("CHAT_ID", "")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "change-me")
 WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "")
 
@@ -754,20 +754,39 @@ def webhook(target_id):
         return jsonify({"ok": False, "error": "Internal processing error"}), 500
 
 
+_bootstrap_lock = threading.Lock()
+_bootstrap_done = False
+
+
+def bootstrap() -> None:
+    """Initialize the DB and start the monitoring thread exactly once.
+
+    Runs at import time (module scope) so it fires both when the file is
+    executed directly (`python app.py`) AND when a WSGI server like gunicorn
+    imports it as `app:app` without ever calling `main()`. Without this,
+    gunicorn would serve requests against a database that was never created.
+    """
+    global _bootstrap_done
+    with _bootstrap_lock:
+        if _bootstrap_done:
+            return
+        init_db()
+        monitor_thread = threading.Thread(target=monitor_loop, name="source-monitor", daemon=True)
+        monitor_thread.start()
+        if not configured_telegram():
+            print("[!] Telegram BOT_TOKEN / CHAT_ID not set — alerts disabled")
+        _bootstrap_done = True
+
+
+bootstrap()
+
+
 def main() -> None:
-    init_db()
-    monitor_thread = threading.Thread(target=monitor_loop, name="source-monitor", daemon=True)
-    monitor_thread.start()
-
-    if not configured_telegram():
-        print("[!] Telegram BOT_TOKEN / CHAT_ID not set — alerts disabled")
-
     print("=" * 60)
     print("Multi-Target Monitoring Server")
     print("Dashboard : http://127.0.0.1:5000/")
     print("Webhook   : POST /webhook/<target_id>")
     print("=" * 60)
-
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)), debug=False, use_reloader=False)
 
 
