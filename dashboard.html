@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مركز المراقبة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B1220; --panel:#121B2E; --panel2:#17233A; --panel3:#0E1626; --border:#243352;
+  --text:#E7ECF3; --muted:#8FA0B8; --muted-dim:#5E6E88;
+  --teal:#2DD4BF; --teal-dim:rgba(45,212,191,.14);
+  --amber:#F5A524; --amber-dim:rgba(245,165,36,.14);
+  --red:#F0576B; --red-dim:rgba(240,87,107,.14);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh; color:var(--text); font-family:'IBM Plex Sans Arabic', sans-serif;
+  background:
+    radial-gradient(1100px 600px at 90% -10%, rgba(45,212,191,.08), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, rgba(245,165,36,.05), transparent 60%),
+    var(--bg);
+}
+.wrap{max-width:1240px; margin:0 auto; padding:22px 22px 60px}
+
+.topbar{
+  display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  background:linear-gradient(180deg, var(--panel), var(--panel2)); border:1px solid var(--border);
+  border-radius:16px; padding:16px 20px; margin-bottom:20px;
+}
+.brand{display:flex; align-items:center; gap:12px}
+.signal{width:38px; height:38px; border-radius:50%; background:var(--teal-dim); display:flex; align-items:center; justify-content:center; position:relative; flex:none}
+.signal::before{content:''; position:absolute; inset:0; border-radius:50%; border:2px solid var(--teal); animation:pulse 2.4s ease-out infinite}
+.signal-dot{width:9px;height:9px;border-radius:50%;background:var(--teal); box-shadow:0 0 10px var(--teal)}
+@keyframes pulse{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.2);opacity:0}}
+.brand h1{font-family:'Tajawal',sans-serif; font-weight:800; font-size:19px; margin:0}
+.brand p{margin:2px 0 0; font-size:12.5px; color:var(--muted)}
+
+.stats{display:flex; gap:10px; flex-wrap:wrap}
+.stat{background:var(--panel3); border:1px solid var(--border); border-radius:10px; padding:8px 14px; text-align:center; min-width:76px}
+.stat b{display:block; font-family:'JetBrains Mono',monospace; font-size:17px}
+.stat span{font-size:11px; color:var(--muted)}
+.stat.tg-on b{color:var(--teal)} .stat.tg-off b{color:var(--red)}
+
+.top-actions{display:flex; gap:10px}
+.btn{border:0; border-radius:10px; padding:10px 16px; font-weight:700; cursor:pointer; font-family:'Tajawal',sans-serif; font-size:13.5px; transition:transform .15s, box-shadow .15s; white-space:nowrap}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--teal); color:#06231F; box-shadow:0 6px 18px rgba(45,212,191,.18)}
+.btn-ghost{background:transparent; color:var(--muted); border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text); border-color:var(--muted-dim)}
+
+.grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:16px}
+.empty{grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--muted); border:1px dashed var(--border); border-radius:16px}
+.empty b{display:block; color:var(--text); font-family:'Tajawal',sans-serif; font-size:17px; margin-bottom:6px}
+
+.card{background:linear-gradient(180deg, var(--panel), var(--panel2)); border:1px solid var(--border); border-radius:14px; padding:16px 16px 14px; display:flex; flex-direction:column; gap:10px}
+.card.paused{opacity:.55}
+.card-head{display:flex; align-items:flex-start; justify-content:space-between; gap:8px}
+.card-title{display:flex; align-items:center; gap:9px; min-width:0}
+.dot{width:9px; height:9px; border-radius:50%; flex:none; position:relative}
+.dot.on{background:var(--teal); box-shadow:0 0 8px var(--teal)}
+.dot.on::before{content:'';position:absolute;inset:-4px;border-radius:50%;border:1.5px solid var(--teal);animation:pulse 2.4s ease-out infinite}
+.dot.off{background:var(--muted-dim)}
+.dot.matched{background:var(--amber); box-shadow:0 0 8px var(--amber)}
+.card-title h3{margin:0; font-family:'Tajawal',sans-serif; font-size:15.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.badge{font-size:10.5px; padding:3px 9px; border-radius:20px; background:var(--panel3); color:var(--muted); border:1px solid var(--border); white-space:nowrap}
+
+.card-status{font-size:12.5px; color:var(--muted); line-height:1.6}
+.card-status .url{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; margin-top:4px}
+.card-meta{display:flex; gap:12px; font-size:11px; color:var(--muted-dim); font-family:'JetBrains Mono',monospace}
+
+.card-actions{display:flex; gap:6px; flex-wrap:wrap; margin-top:4px}
+.icon-btn{flex:1; min-width:60px; border:1px solid var(--border); background:var(--panel3); color:var(--muted); border-radius:8px; padding:7px 6px; font-size:11.5px; cursor:pointer; font-family:inherit; font-weight:500; transition:.15s}
+.icon-btn:hover{color:var(--text); border-color:var(--muted-dim)}
+.icon-btn.danger:hover{color:var(--red); border-color:var(--red)}
+.icon-btn.accent:hover{color:var(--teal); border-color:var(--teal)}
+
+.overlay{position:fixed; inset:0; background:rgba(4,8,16,.72); backdrop-filter:blur(3px); display:none; align-items:center; justify-content:center; z-index:50; padding:20px}
+.overlay.show{display:flex}
+.modal{width:100%; max-width:640px; max-height:88vh; overflow:auto; background:var(--panel2); border:1px solid var(--border); border-radius:16px; padding:24px}
+.modal h2{font-family:'Tajawal',sans-serif; margin:0 0 4px; font-size:18px}
+.modal .hint-box{font-size:12px; color:var(--muted); margin-bottom:16px}
+.form-row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.field{margin-bottom:13px}
+.field.full{grid-column:1/-1}
+.field label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px; font-weight:500}
+.field input, .field select, .field textarea{width:100%; padding:10px 12px; border-radius:9px; border:1px solid var(--border); background:var(--panel3); color:var(--text); font-size:13.5px; font-family:inherit}
+.field textarea{font-family:'JetBrains Mono',monospace; font-size:12.5px}
+.field input:focus, .field select:focus, .field textarea:focus{outline:none; border-color:var(--teal)}
+.site-hint{font-size:11.5px; color:var(--amber); background:var(--amber-dim); border:1px solid rgba(245,165,36,.3); border-radius:8px; padding:8px 10px; margin-top:6px; display:none; line-height:1.6}
+.modal-actions{display:flex; gap:10px; margin-top:18px; justify-content:flex-end}
+.section-label{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted-dim); margin:18px 0 8px; font-weight:600}
+
+.drawer{position:fixed; inset-inline-end:0; top:0; bottom:0; width:100%; max-width:440px; background:var(--panel); border-inline-start:1px solid var(--border); z-index:60; transform:translateX(-105%); transition:transform .25s; padding:22px; overflow:auto}
+.drawer.show{transform:translateX(0)}
+.drawer h2{font-family:'Tajawal',sans-serif; font-size:17px; margin:0 0 4px}
+.drawer .sub{font-size:12px; color:var(--muted); margin-bottom:16px}
+.hist-row{border-bottom:1px solid var(--border); padding:10px 0; font-size:12.5px}
+.hist-row .top{display:flex; justify-content:space-between; gap:8px; margin-bottom:3px}
+.hist-type{font-family:'JetBrains Mono',monospace; font-size:10.5px; padding:2px 8px; border-radius:6px; background:var(--panel3); color:var(--muted)}
+.hist-type.MATCH,.hist-type.ACTION_SUCCESS,.hist-type.CREATED,.hist-type.RESUMED{color:var(--teal); background:var(--teal-dim)}
+.hist-type.ACTION_FAILED,.hist-type.ERROR,.hist-type.SOURCE_ERROR,.hist-type.WEBHOOK_ERROR,.hist-type.ACTION_ERROR{color:var(--red); background:var(--red-dim)}
+.hist-type.FORBIDDEN_MATCH,.hist-type.PAUSED{color:var(--amber); background:var(--amber-dim)}
+.hist-time{color:var(--muted-dim); font-family:'JetBrains Mono',monospace; font-size:10.5px}
+.hist-msg{color:var(--muted); word-break:break-word}
+.close-x{position:absolute; top:18px; inset-inline-start:18px; background:none; border:0; color:var(--muted); font-size:20px; cursor:pointer}
+
+.toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:var(--panel2); border:1px solid var(--border); color:var(--text); padding:11px 20px; border-radius:10px; font-size:13.5px; z-index:80; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(-6px)}
+.toast.ok{border-color:rgba(45,212,191,.4)} .toast.bad{border-color:rgba(240,87,107,.4)}
+
+@media(max-width:640px){ .form-row{grid-template-columns:1fr} .stats{display:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="signal"><div class="signal-dot"></div></div>
+      <div>
+        <h1>مركز المراقبة</h1>
+        <p>مراقبة الأهداف، الإجراءات التلقائية، والإشعارات</p>
+      </div>
+    </div>
+    <div class="stats" id="stats">
+      <div class="stat"><b id="st-total">–</b><span>الأهداف</span></div>
+      <div class="stat"><b id="st-active">–</b><span>نشطة</span></div>
+      <div class="stat"><b id="st-matched">–</b><span>متحققة</span></div>
+      <div class="stat" id="st-tg-wrap"><b id="st-tg">–</b><span>تيليجرام</span></div>
+    </div>
+    <div class="top-actions">
+      <button class="btn btn-primary" onclick="openModal()">+ إضافة هدف</button>
+      <a href="{{ url_for('logout') }}" class="btn btn-ghost" style="text-decoration:none;display:inline-block">خروج</a>
+    </div>
+  </div>
+
+  <div class="grid" id="grid">
+    <div class="empty">جاري التحميل...</div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modal-title">إضافة هدف مراقبة جديد</h2>
+    <p class="hint-box">كل هدف مراقبة مستقل بإعداداته الخاصة (رابط، شروط، إجراء، إشعار).</p>
+    <form id="targetForm">
+      <div class="field full">
+        <label>اسم الهدف</label>
+        <input id="f_name" placeholder="مثال: متابعة سعر المنتج X" required>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>نوع الموقع</label>
+          <select id="f_site_type" onchange="showSiteHint()"></select>
+        </div>
+        <div class="field">
+          <label>طريقة المراقبة</label>
+          <select id="f_monitor_mode">
+            <option value="polling">Polling (فحص دوري)</option>
+            <option value="webhook">Webhook</option>
+          </select>
+        </div>
+      </div>
+      <div class="site-hint" id="site-hint"></div>
+
+      <div class="field full" style="margin-top:13px">
+        <label>رابط المصدر (Source URL)</label>
+        <input id="f_source_url" type="url" placeholder="https://example.com/product">
+      </div>
+
+      <div class="section-label">شروط المطابقة</div>
+      <div class="form-row">
+        <div class="field">
+          <label>required_terms (مفصولة بفواصل)</label>
+          <input id="f_required_terms" placeholder="متوفر,جاهز">
+        </div>
+        <div class="field">
+          <label>forbidden_terms (مفصولة بفواصل)</label>
+          <input id="f_forbidden_terms" placeholder="نفد,غير متوفر">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>target_text (نص بسيط اختياري)</label>
+          <input id="f_target_text">
+        </div>
+        <div class="field">
+          <label>الشرط الافتراضي (fallback)</label>
+          <input id="f_monitor_condition" value="available">
+        </div>
+      </div>
+
+      <div class="section-label">قيم رقمية (اختياري)</div>
+      <div class="form-row">
+        <div class="field">
+          <label>price_selector</label>
+          <input id="f_price_selector" placeholder="span.price">
+        </div>
+        <div class="field">
+          <label>stock_selector</label>
+          <input id="f_stock_selector" placeholder="div.stock">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>price_condition</label>
+          <input id="f_price_condition" placeholder="<=250">
+        </div>
+        <div class="field">
+          <label>min_stock</label>
+          <input id="f_min_stock" type="number" min="0">
+        </div>
+      </div>
+
+      <div class="section-label">الإجراء التلقائي والإشعار</div>
+      <div class="form-row">
+        <div class="field">
+          <label>رابط الإجراء (Action URL)</label>
+          <input id="f_action_url" type="url">
+        </div>
+        <div class="field">
+          <label>Action Method</label>
+          <select id="f_action_method"><option value="POST">POST</option><option value="GET">GET</option></select>
+        </div>
+      </div>
+      <div class="field full">
+        <label>Action Body (JSON)</label>
+        <textarea id="f_action_body" rows="3" placeholder='{"product_id":"123"}'></textarea>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>تفعيل الإجراء التلقائي</label>
+          <select id="f_auto_action_enabled"><option value="false">معطّل</option><option value="true">مفعّل</option></select>
+        </div>
+        <div class="field">
+          <label>use_browser</label>
+          <select id="f_use_browser">
+            <option value="auto">auto</option>
+            <option value="requests">requests</option>
+            <option value="playwright">playwright</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>طريقة طلب المصدر</label>
+          <select id="f_source_method"><option value="GET">GET</option><option value="POST">POST</option></select>
+        </div>
+        <div class="field">
+          <label>الفاصل الزمني (ثواني)</label>
+          <input id="f_poll_interval" type="number" min="5" value="30">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+        <button type="submit" class="btn btn-primary">حفظ الهدف</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="drawer" id="drawer">
+  <button class="close-x" onclick="closeDrawer()">×</button>
+  <h2 id="drawer-title">السجل</h2>
+  <p class="sub">آخر 200 حدث لهذا الهدف</p>
+  <div id="drawer-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SITE_PRESETS = {{ site_presets|tojson }};
+let TARGETS = [];
+let EDIT_ID = null;
+
+function toast(msg, ok=true){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + (ok ? 'ok' : 'bad');
+  setTimeout(()=> t.className = 'toast', 2600);
+}
+function csvToList(s){ if(!s) return []; return s.split(',').map(x=>x.trim()).filter(Boolean); }
+function esc(s){ return (s||'').toString().replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function timeAgo(iso){
+  if(!iso) return '—';
+  const diff = (Date.now() - new Date(iso).getTime())/1000;
+  if(diff < 60) return 'الآن';
+  if(diff < 3600) return Math.floor(diff/60) + ' د';
+  if(diff < 86400) return Math.floor(diff/3600) + ' س';
+  return Math.floor(diff/86400) + ' يوم';
+}
+
+async function api(url, opts={}){
+  const r = await fetch(url, {headers:{'Content-Type':'application/json'}, ...opts});
+  return r.json();
+}
+
+async function loadSummary(){
+  try{
+    const j = await api('/api/summary');
+    if(!j.ok) return;
+    document.getElementById('st-total').textContent = j.total;
+    document.getElementById('st-active').textContent = j.active;
+    document.getElementById('st-matched').textContent = j.matched;
+    const tg = document.getElementById('st-tg');
+    tg.textContent = j.telegram_configured ? '✓' : '✗';
+    document.getElementById('st-tg-wrap').className = 'stat ' + (j.telegram_configured ? 'tg-on' : 'tg-off');
+  }catch(e){}
+}
+
+function siteLabel(key){ return (SITE_PRESETS[key] && SITE_PRESETS[key].label) || key; }
+
+function renderCard(t){
+  const dotClass = !t.is_active ? 'off' : (t.match_active ? 'matched' : 'on');
+  const url = t.source_url ? t.source_url.replace(/^https?:\/\//,'') : 'بدون رابط مصدر';
+  return `
+  <div class="card ${t.is_active ? '' : 'paused'}">
+    <div class="card-head">
+      <div class="card-title">
+        <span class="dot ${dotClass}"></span>
+        <h3 title="${esc(t.name)}">${esc(t.name)}</h3>
+      </div>
+      <span class="badge">${esc(siteLabel(t.site_type))}</span>
+    </div>
+    <div class="card-status">
+      ${esc(t.last_status || '—')}
+      <span class="url">${esc(url)}</span>
+    </div>
+    <div class="card-meta">
+      <span>⏱ ${timeAgo(t.last_data_time)}</span>
+      <span>${t.monitor_mode === 'polling' ? 'Polling ' + (t.poll_interval||30)+'ث' : 'Webhook'}</span>
+    </div>
+    <div class="card-actions">
+      <button class="icon-btn accent" onclick="testTarget(${t.id})">اختبار الآن</button>
+      <button class="icon-btn" onclick="toggleTarget(${t.id})">${t.is_active ? 'إيقاف' : 'تشغيل'}</button>
+      <button class="icon-btn" onclick="openHistory(${t.id}, '${esc(t.name)}')">السجل</button>
+      <button class="icon-btn" onclick="editTarget(${t.id})">تعديل</button>
+      <button class="icon-btn danger" onclick="deleteTarget(${t.id}, '${esc(t.name)}')">حذف</button>
+    </div>
+  </div>`;
+}
+
+async function loadTargets(){
+  const j = await api('/api/targets');
+  if(!j.ok) return;
+  TARGETS = j.targets;
+  const grid = document.getElementById('grid');
+  if(!TARGETS.length){
+    grid.innerHTML = `<div class="empty"><b>لا توجد أهداف مراقبة بعد</b>اضغط "+ إضافة هدف" للبدء بمراقبة أول منتج أو صفحة.</div>`;
+    return;
+  }
+  grid.innerHTML = TARGETS.map(renderCard).join('');
+}
+
+function populateSitePresets(){
+  const sel = document.getElementById('f_site_type');
+  sel.innerHTML = Object.keys(SITE_PRESETS).map(k => `<option value="${k}">${esc(SITE_PRESETS[k].label)}</option>`).join('');
+}
+function showSiteHint(){
+  const key = document.getElementById('f_site_type').value;
+  const hint = document.getElementById('site-hint');
+  const text = (SITE_PRESETS[key] && SITE_PRESETS[key].hint) || '';
+  if(text){ hint.style.display='block'; hint.textContent = '⚠ ' + text; }
+  else{ hint.style.display='none'; }
+}
+
+function resetForm(){
+  document.getElementById('targetForm').reset();
+  document.getElementById('f_poll_interval').value = 30;
+  document.getElementById('f_monitor_condition').value = 'available';
+  document.getElementById('f_use_browser').value = 'auto';
+  showSiteHint();
+}
+
+function openModal(){
+  EDIT_ID = null;
+  document.getElementById('modal-title').textContent = 'إضافة هدف مراقبة جديد';
+  resetForm();
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal(){ document.getElementById('overlay').classList.remove('show'); }
+
+function editTarget(id){
+  const t = TARGETS.find(x => x.id === id);
+  if(!t) return;
+  EDIT_ID = id;
+  document.getElementById('modal-title').textContent = 'تعديل: ' + t.name;
+  document.getElementById('f_name').value = t.name || '';
+  document.getElementById('f_site_type').value = t.site_type || 'generic';
+  document.getElementById('f_monitor_mode').value = t.monitor_mode || 'polling';
+  document.getElementById('f_source_url').value = t.source_url || '';
+  document.getElementById('f_required_terms').value = (t.required_terms||[]).join(',');
+  document.getElementById('f_forbidden_terms').value = (t.forbidden_terms||[]).join(',');
+  document.getElementById('f_target_text').value = t.target_text || '';
+  document.getElementById('f_monitor_condition').value = t.monitor_condition || 'available';
+  document.getElementById('f_price_selector').value = t.price_selector || '';
+  document.getElementById('f_stock_selector').value = t.stock_selector || '';
+  document.getElementById('f_price_condition').value = t.price_condition || '';
+  document.getElementById('f_min_stock').value = t.min_stock ?? '';
+  document.getElementById('f_action_url').value = t.action_url || '';
+  document.getElementById('f_action_method').value = t.action_method || 'POST';
+  document.getElementById('f_action_body').value = t.action_body || '';
+  document.getElementById('f_auto_action_enabled').value = t.auto_action_enabled ? 'true' : 'false';
+  document.getElementById('f_use_browser').value = t.use_browser || 'auto';
+  document.getElementById('f_source_method').value = t.source_method || 'GET';
+  document.getElementById('f_poll_interval').value = t.poll_interval || 30;
+  showSiteHint();
+  document.getElementById('overlay').classList.add('show');
+}
+
+document.getElementById('targetForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const payload = {
+    name: document.getElementById('f_name').value.trim(),
+    site_type: document.getElementById('f_site_type').value,
+    monitor_mode: document.getElementById('f_monitor_mode').value,
+    source_url: document.getElementById('f_source_url').value.trim(),
+    required_terms: csvToList(document.getElementById('f_required_terms').value),
+    forbidden_terms: csvToList(document.getElementById('f_forbidden_terms').value),
+    target_text: document.getElementById('f_target_text').value.trim(),
+    monitor_condition: document.getElementById('f_monitor_condition').value.trim() || 'available',
+    price_selector: document.getElementById('f_price_selector').value.trim(),
+    stock_selector: document.getElementById('f_stock_selector').value.trim(),
+    price_condition: document.getElementById('f_price_condition').value.trim(),
+    min_stock: document.getElementById('f_min_stock').value ? Number(document.getElementById('f_min_stock').value) : null,
+    action_url: document.getElementById('f_action_url').value.trim(),
+    action_method: document.getElementById('f_action_method').value,
+    action_body: document.getElementById('f_action_body').value.trim(),
+    auto_action_enabled: document.getElementById('f_auto_action_enabled').value === 'true',
+    use_browser: document.getElementById('f_use_browser').value,
+    source_method: document.getElementById('f_source_method').value,
+    poll_interval: Number(document.getElementById('f_poll_interval').value) || 30,
+  };
+  const url = EDIT_ID ? `/api/targets/${EDIT_ID}` : '/api/targets';
+  const method = EDIT_ID ? 'PUT' : 'POST';
+  const j = await api(url, {method, body: JSON.stringify(payload)});
+  if(j.ok){
+    toast('✅ تم حفظ الهدف بنجاح');
+    closeModal();
+    loadTargets(); loadSummary();
+  }else{
+    toast('❌ ' + (j.error || 'خطأ غير معروف'), false);
+  }
+});
+
+async function toggleTarget(id){
+  const j = await api(`/api/targets/${id}/toggle`, {method:'POST'});
+  if(j.ok){ loadTargets(); loadSummary(); } else toast('❌ ' + j.error, false);
+}
+
+async function testTarget(id){
+  toast('⏳ جاري الفحص الآن...');
+  const j = await api(`/api/targets/${id}/test`, {method:'POST'});
+  if(j.ok){
+    toast(j.result.matched ? '✅ الشرط متحقق!' : 'ℹ️ الشرط غير متحقق حاليًا');
+    loadTargets(); loadSummary();
+  }else{
+    toast('❌ ' + j.error, false);
+  }
+}
+
+async function deleteTarget(id, name){
+  if(!confirm(`حذف الهدف "${name}"؟ لا يمكن التراجع.`)) return;
+  const j = await api(`/api/targets/${id}/delete`, {method:'POST'});
+  if(j.ok){ toast('🗑️ تم الحذف'); loadTargets(); loadSummary(); } else toast('❌ ' + j.error, false);
+}
+
+async function openHistory(id, name){
+  document.getElementById('drawer-title').textContent = 'سجل: ' + name;
+  document.getElementById('drawer-content').innerHTML = 'جاري التحميل...';
+  document.getElementById('drawer').classList.add('show');
+  const j = await api(`/api/targets/${id}/history`);
+  if(!j.ok){ document.getElementById('drawer-content').textContent = 'تعذر تحميل السجل'; return; }
+  if(!j.history.length){ document.getElementById('drawer-content').textContent = 'لا يوجد سجل بعد'; return; }
+  document.getElementById('drawer-content').innerHTML = j.history.map(h => `
+    <div class="hist-row">
+      <div class="top">
+        <span class="hist-type ${esc(h.event_type)}">${esc(h.event_type)}</span>
+        <span class="hist-time">${esc(h.timestamp)}</span>
+      </div>
+      <div class="hist-msg">${esc(h.message) || '—'}</div>
+    </div>`).join('');
+}
+function closeDrawer(){ document.getElementById('drawer').classList.remove('show'); }
+
+populateSitePresets();
+loadTargets();
+loadSummary();
+setInterval(loadTargets, 6000);
+setInterval(loadSummary, 6000);
+</script>
+</body>
+</html>

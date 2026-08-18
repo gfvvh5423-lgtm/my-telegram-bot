@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تسجيل الدخول — مركز المراقبة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B1220; --panel:#121B2E; --panel2:#17233A; --border:#243352;
+  --text:#E7ECF3; --muted:#8FA0B8; --teal:#2DD4BF; --amber:#F5A524; --red:#F0576B;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background:
+    radial-gradient(1100px 600px at 85% -10%, rgba(45,212,191,.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(245,165,36,.08), transparent 60%),
+    var(--bg);
+  color:var(--text); font-family:'IBM Plex Sans Arabic', sans-serif;
+}
+.card{
+  width:100%; max-width:400px; background:linear-gradient(180deg, var(--panel), var(--panel2));
+  border:1px solid var(--border); border-radius:16px; padding:34px 30px;
+  box-shadow:0 20px 60px rgba(0,0,0,.45);
+}
+.signal{
+  width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:rgba(45,212,191,.12); margin-bottom:18px; position:relative;
+}
+.signal::before{
+  content:''; position:absolute; inset:0; border-radius:50%; border:2px solid var(--teal);
+  animation:pulse 2.2s ease-out infinite;
+}
+.signal-dot{width:10px;height:10px;border-radius:50%;background:var(--teal); box-shadow:0 0 12px var(--teal);}
+@keyframes pulse{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.1);opacity:0}}
+h1{font-family:'Tajawal',sans-serif; font-weight:800; font-size:22px; margin:0 0 6px}
+.sub{color:var(--muted); font-size:13.5px; margin:0 0 26px}
+label{display:block; font-size:13px; color:var(--muted); margin-bottom:8px; font-weight:500}
+input{
+  width:100%; padding:13px 14px; border-radius:10px; border:1px solid var(--border);
+  background:#0E1626; color:var(--text); font-size:15px; font-family:inherit;
+}
+input:focus{outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(45,212,191,.15)}
+button{
+  width:100%; margin-top:18px; padding:13px; border:0; border-radius:10px; cursor:pointer;
+  background:var(--teal); color:#06231F; font-weight:700; font-size:15px; font-family:'Tajawal',sans-serif;
+  transition:transform .15s, box-shadow .15s;
+}
+button:hover{transform:translateY(-1px); box-shadow:0 8px 22px rgba(45,212,191,.25)}
+.err{
+  margin-top:16px; padding:10px 12px; border-radius:8px; background:rgba(240,87,107,.12);
+  border:1px solid rgba(240,87,107,.35); color:#FF8C9A; font-size:13.5px;
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="signal"><div class="signal-dot"></div></div>
+  <h1>مركز المراقبة</h1>
+  <p class="sub">أدخل كلمة المرور للوصول إلى لوحة الأهداف والإعدادات.</p>
+  {% if login_error %}<div class="err">{{ login_error }}</div>{% endif %}
+  <form method="post" action="{{ url_for('login') }}">
+    <label>كلمة المرور</label>
+    <input type="password" name="password" autofocus required>
+    <button type="submit">دخول</button>
+  </form>
+</div>
+</body>
+</html>
